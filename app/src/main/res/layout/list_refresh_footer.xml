@@ -3,16 +3,23 @@
     android:layout_height="match_parent">
 
 
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
     <TextView
+        android:id="@+id/tv_footer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="加载更多"
-        android:textSize="15sp"/>
+        android:textSize="15sp" />
+
+    <ProgressBar
+        android:id="@+id/pull_to_refresh_load_progress"
+        style="@android:style/Widget.ProgressBar.Small.Inverse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@id/tv_footer"
+        android:indeterminate="true" />
 
 
 </RelativeLayout>

@@ -148,7 +148,7 @@ public class OnRefreshLayout extends SwipeRefreshLayout implements AbsListView.O
             // 设置状态
             setLoading(true);
             //
-            mOnLoadListener.onPullUpToRefresh();
+            mOnLoadListener.onLoad();
         }
     }
 
@@ -187,10 +187,7 @@ public class OnRefreshLayout extends SwipeRefreshLayout implements AbsListView.O
         }
     }
 
-
-    public abstract class OnLoadListener implements OnRefreshListener {
-        public abstract void onPullUpToRefresh();
+    public interface  OnLoadListener{
+        void onLoad();
     }
-
-
 }

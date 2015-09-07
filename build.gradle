@@ -12,5 +12,8 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven{
+            url "http://redallanlu.vicp.cc:8081/nexus/content/groups/public/"
+        }
     }
 }

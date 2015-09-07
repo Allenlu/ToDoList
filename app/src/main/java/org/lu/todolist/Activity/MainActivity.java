@@ -2,85 +2,77 @@ package org.lu.todolist.Activity;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.lu.todolist.R;
 import org.lu.todolist.component.OnRefreshLayout;
+import org.lu.todolist.control.HttpRequest.ChanceRequest;
+import org.lu.todolist.control.ImageAdapter;
+import org.lu.todolist.control.tools.Task;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+import de.greenrobot.event.EventBus;
 
 public class MainActivity extends Activity  implements SwipeRefreshLayout.OnRefreshListener,OnRefreshLayout.OnLoadListener {
     private OnRefreshLayout ll_refresh;
     private ListView lv_content;
-    private Runnable refreshTask;
-    private Runnable loadMoreTask;
-    private Handler handler;
-    private BaseAdapter adapter;
-    private  List<String> datas;
+    private ImageAdapter adapter;
+    private long sTime;
+    private long eTime;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(!EventBus.getDefault().isRegistered(this)){
+            EventBus.getDefault().register(this);
+        }
         setContentView(R.layout.main);
         ll_refresh=(OnRefreshLayout)findViewById(R.id.ll_refresh);
         ll_refresh.setOnRefreshListener(this);
         ll_refresh.setOnLoadListener(this);
         // 设置下拉圆圈上的颜色，蓝色、绿色、橙色、红色
-        ll_refresh.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,android.R.color.holo_orange_light, android.R.color.holo_red_light);
+        ll_refresh.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
         ll_refresh.setDistanceToTriggerSync(100);// 设置手指在屏幕下拉多少距离会触发下拉刷新
         ll_refresh.setSize(SwipeRefreshLayout.LARGE); // 设置圆圈的大小
 
-        refreshTask=new Runnable() {
-            @Override
-            public void run() {
-                datas.add(new Date().toGMTString());
-                adapter.notifyDataSetChanged();
-                Toast.makeText(MainActivity.this, "Refresh data", Toast.LENGTH_SHORT).show();
-                ll_refresh.setRefreshing(false);
-            }
-        };
-
-        loadMoreTask=new Runnable(){
-            @Override
-            public void run() {
-                datas.add(new Date().toGMTString());
-                adapter.notifyDataSetChanged();
-                Toast.makeText(MainActivity.this,"load more Data",Toast.LENGTH_SHORT).show();
-                ll_refresh.setLoading(false);
-            }
-        };
-        handler=new Handler();
-
-
-        // 模拟一些数据
-        datas = new ArrayList<String>();
-        for (int i = 0; i < 20; i++) {
-            datas.add("item - " + i);
-        }
-
-        // 构造适配器
-         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,datas);
-        // 获取listview实例
+        adapter=new ImageAdapter(this);
         ListView listView = (ListView) findViewById(R.id.lv_content);
         listView.setAdapter(adapter);
 
+        onRefresh();
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
     public void onRefresh() {
-        handler.postDelayed(refreshTask,2000);
+        Map<String,Object> param=new HashMap<String,Object>();
+        if(sTime!=0){
+            param.put(ChanceRequest.PARAM_TIME,sTime);
+            param.put(ChanceRequest.PARAM_FTYPE,0);
+        }
+        ChanceRequest refreshChance=new ChanceRequest(Task.GET_CHANCE);
+        refreshChance.execute(param);
     }
 
     @Override
     public void onLoad(){
-        handler.postDelayed(loadMoreTask,2000);
+        Map<String,Object> param=new HashMap<String,Object>();
+        param.put(ChanceRequest.PARAM_TIME,eTime);
+        param.put(ChanceRequest.PARAM_FTYPE,1);
+        ChanceRequest loadMoreChance=new ChanceRequest(Task.GET_CHANCE);
+        loadMoreChance.execute(param);
+    }
+
+    public void onEvent(){
+
     }
 }

@@ -43,6 +43,8 @@ public class OnRefreshLayout extends SwipeRefreshLayout implements AbsListView.O
      */
     private boolean isLoading = false;
 
+    private Context mContext;
+
     public OnRefreshLayout(Context context) {
         super(context, null);
     }
@@ -50,31 +52,23 @@ public class OnRefreshLayout extends SwipeRefreshLayout implements AbsListView.O
     public OnRefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-        mListViewFooter = LayoutInflater.from(context).inflate(R.layout.list_refresh_footer, null, false);
+        mContext=context;
     }
 
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-
-        // 初始化ListView对象
-        if (mListView == null) {
-            getListView();
-        }
-    }
 
     /**
      * 获取ListView对象
      */
     private void getListView() {
-        int childs = getChildCount();
-        if (childs > 0) {
-            View childView = getChildAt(0);
+        int childCount = getChildCount();
+        for(int i=0;i<childCount;i++){
+            View childView = getChildAt(i);
             if (childView instanceof ListView) {
                 mListView = (ListView) childView;
                 // 设置滚动监听器给ListView, 使得滚动的情况下也可以自动加载
                 mListView.setOnScrollListener(this);
                 Log.d(VIEW_LOG_TAG, "### 找到listview");
+                break;
             }
         }
     }
@@ -158,9 +152,13 @@ public class OnRefreshLayout extends SwipeRefreshLayout implements AbsListView.O
     public void setLoading(boolean loading) {
         isLoading = loading;
         if (isLoading) {
-            mListView.addFooterView(mListViewFooter);
+//            mListView.addFooterView(mListViewFooter);
+            mListViewFooter.setVisibility(View.VISIBLE);
+            mListViewFooter.setPadding(0, 0, 0, 0);
         } else {
-            mListView.removeFooterView(mListViewFooter);
+//            mListView.removeFooterView(mListViewFooter);
+            mListViewFooter.setVisibility(View.GONE);
+            mListViewFooter.setPadding(0, -mListViewFooter.getHeight(), 0, 0);
             mYDown = 0;
             mLastY = 0;
         }
@@ -171,6 +169,14 @@ public class OnRefreshLayout extends SwipeRefreshLayout implements AbsListView.O
      */
     public void setOnLoadListener(OnLoadListener loadListener) {
         mOnLoadListener = loadListener;
+        // 初始化ListView对象
+        if (mListView == null) {
+            getListView();
+        }
+        if(mListViewFooter==null){
+            mListViewFooter = LayoutInflater.from(mContext).inflate(R.layout.list_refresh_footer, null, false);
+        }
+        mListView.addFooterView(mListViewFooter);
     }
 
     @Override
@@ -179,8 +185,7 @@ public class OnRefreshLayout extends SwipeRefreshLayout implements AbsListView.O
     }
 
     @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
-                         int totalItemCount) {
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
         // 滚动时到了最底部也可以加载更多
         if (canLoad()) {
             loadData();

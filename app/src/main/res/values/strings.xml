@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ToDoList</string>
+    <string name="refresh_layout_load">加载更多</string>
+    <string name="refresh_layout_loading">加载中</string>
 </resources>
